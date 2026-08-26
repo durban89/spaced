@@ -1,8 +1,8 @@
 const CACHE_NAME = 'aosibin-v1'
 const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
+  '/memory/',
+  '/memory/index.html',
+  '/memory/manifest.json',
 ]
 
 self.addEventListener('install', (event) => {
