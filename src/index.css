@@ -873,3 +873,20 @@ body {
   justify-content: center;
   gap: 4px;
 }
+
+.btn-google {
+  width: 100%;
+  padding: 14px;
+  font-size: 15px;
+  border-radius: var(--radius);
+  background: var(--bg-card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  font-weight: 600;
+  gap: 10px;
+}
+
+.btn-google:hover:not(:disabled) {
+  background: var(--border);
+  box-shadow: var(--shadow-sm);
+}

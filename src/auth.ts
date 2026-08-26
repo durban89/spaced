@@ -1,19 +1,16 @@
 import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
   signOut,
   onAuthStateChanged,
   type User,
 } from 'firebase/auth'
 import { auth } from './firebase'
 
-export async function register(email: string, password: string): Promise<User> {
-  const cred = await createUserWithEmailAndPassword(auth, email, password)
-  return cred.user
-}
+const googleProvider = new GoogleAuthProvider()
 
-export async function login(email: string, password: string): Promise<User> {
-  const cred = await signInWithEmailAndPassword(auth, email, password)
+export async function signInWithGoogle(): Promise<User> {
+  const cred = await signInWithPopup(auth, googleProvider)
   return cred.user
 }
 

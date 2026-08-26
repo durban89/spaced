@@ -1,5 +1,4 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import { logout } from '../auth'
 import DueNotify from './DueNotify'
 
 function HomeIcon({ active }: { active: boolean }) {
@@ -41,16 +40,6 @@ function StatsIcon({ active }: { active: boolean }) {
   )
 }
 
-function LogoutIcon({ active }: { active: boolean }) {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.2 : 1.8} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-      <path d="M16 17l5-5-5-5" />
-      <path d="M21 12H9" />
-    </svg>
-  )
-}
-
 const navItems = [
   { to: '/', icon: HomeIcon, label: 'Home' },
   { to: '/cards', icon: CardsIcon, label: 'Cards' },
@@ -85,10 +74,6 @@ export default function Layout() {
             )}
           </NavLink>
         ))}
-        <button className="nav-item" onClick={() => logout()}>
-          <span className="nav-icon"><LogoutIcon active={false} /></span>
-          <span className="nav-label">Logout</span>
-        </button>
       </nav>
     </div>
   )
