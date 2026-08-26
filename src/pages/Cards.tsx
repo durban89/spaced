@@ -13,7 +13,7 @@ export default function Cards() {
   const [cards, setCards] = useState<Card[]>([])
   const [categories, setCategories] = useState<{ name: string; count: number }[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string>('')
-  const [editingId, setEditingId] = useState<number | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
   const [editQuestion, setEditQuestion] = useState('')
   const [editAnswer, setEditAnswer] = useState('')
   const [showAddForm, setShowAddForm] = useState(false)
@@ -67,7 +67,7 @@ export default function Cards() {
     loadData()
   }
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     if (!confirm('Delete this card?')) return
     await deleteCard(id)
     loadData()

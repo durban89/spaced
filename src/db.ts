@@ -1,36 +1,35 @@
-import { openDB, type IDBPDatabase } from 'idb'
+import {
+  collection,
+  doc,
+  getDocs,
+  getDoc,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  query,
+  where,
+} from 'firebase/firestore'
+import { db } from './firebase'
+import { getCurrentUser } from './auth'
 import type { Card, Stats } from './types'
 
-const DB_NAME = 'aosibin-db'
-const DB_VERSION = 1
-const STORE_NAME = 'cards'
+function userCardsRef() {
+  const user = getCurrentUser()
+  if (!user) throw new Error('Not authenticated')
+  return collection(db, 'users', user.uid, 'cards')
+}
 
-let dbPromise: Promise<IDBPDatabase> | null = null
-
-function getDB() {
-  if (!dbPromise) {
-    dbPromise = openDB(DB_NAME, DB_VERSION, {
-      upgrade(db) {
-        if (!db.objectStoreNames.contains(STORE_NAME)) {
-          const store = db.createObjectStore(STORE_NAME, {
-            keyPath: 'id',
-            autoIncrement: true,
-          })
-          store.createIndex('category', 'category')
-          store.createIndex('nextReview', 'nextReview')
-        }
-      },
-    })
-  }
-  return dbPromise
+function cardRef(id: string) {
+  const user = getCurrentUser()
+  if (!user) throw new Error('Not authenticated')
+  return doc(db, 'users', user.uid, 'cards', id)
 }
 
 export async function addCard(
   card: Omit<Card, 'id' | 'level' | 'nextReview' | 'reviewHistory' | 'createdAt' | 'updatedAt'>
-): Promise<IDBValidKey> {
-  const db = await getDB()
+): Promise<string> {
   const now = Date.now()
-  return db.add(STORE_NAME, {
+  const docRef = await addDoc(userCardsRef(), {
     ...card,
     level: 0,
     nextReview: now,
@@ -38,46 +37,42 @@ export async function addCard(
     createdAt: now,
     updatedAt: now,
   })
+  return docRef.id
 }
 
-export async function updateCard(id: number, data: Partial<Card>): Promise<void> {
-  const db = await getDB()
-  const existing = await db.get(STORE_NAME, id)
-  if (existing) {
-    await db.put(STORE_NAME, { ...existing, ...data, updatedAt: Date.now() })
-  }
+export async function updateCard(id: string, data: Partial<Card>): Promise<void> {
+  await updateDoc(cardRef(id), { ...data, updatedAt: Date.now() })
 }
 
-export async function deleteCard(id: number): Promise<void> {
-  const db = await getDB()
-  await db.delete(STORE_NAME, id)
+export async function deleteCard(id: string): Promise<void> {
+  await deleteDoc(cardRef(id))
 }
 
-export async function getCard(id: number): Promise<Card | undefined> {
-  const db = await getDB()
-  return db.get(STORE_NAME, id)
+export async function getCard(id: string): Promise<Card | undefined> {
+  const snap = await getDoc(cardRef(id))
+  if (!snap.exists()) return undefined
+  return { id: snap.id, ...snap.data() } as Card
 }
 
 export async function getAllCards(): Promise<Card[]> {
-  const db = await getDB()
-  return db.getAll(STORE_NAME)
+  const snap = await getDocs(userCardsRef())
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Card))
 }
 
 export async function getCardsByCategory(category: string): Promise<Card[]> {
-  const db = await getDB()
-  return db.getAllFromIndex(STORE_NAME, 'category', category)
+  const q = query(userCardsRef(), where('category', '==', category))
+  const snap = await getDocs(q)
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Card))
 }
 
 export async function getDueCards(): Promise<Card[]> {
-  const db = await getDB()
-  const all = await db.getAll(STORE_NAME)
+  const all = await getAllCards()
   const now = Date.now()
   return all.filter((c) => c.nextReview <= now)
 }
 
 export async function getCategories(): Promise<{ name: string; count: number }[]> {
-  const db = await getDB()
-  const all = await db.getAll(STORE_NAME)
+  const all = await getAllCards()
   const map = new Map<string, number>()
   for (const card of all) {
     map.set(card.category, (map.get(card.category) || 0) + 1)
@@ -106,11 +101,12 @@ export async function exportData(): Promise<Card[]> {
 }
 
 export async function importData(cards: Card[]): Promise<void> {
-  const db = await getDB()
-  const tx = db.transaction(STORE_NAME, 'readwrite')
   for (const card of cards) {
     const { id, ...rest } = card
-    await tx.store.put(rest)
+    if (id) {
+      await updateDoc(cardRef(id), rest)
+    } else {
+      await addDoc(userCardsRef(), rest)
+    }
   }
-  await tx.done
 }

@@ -22,7 +22,7 @@ export function scheduleNext(card: Card, result: ReviewResult): { level: number;
   return { level, nextReview }
 }
 
-export async function processReview(cardId: number, result: ReviewResult): Promise<void> {
+export async function processReview(cardId: string, result: ReviewResult): Promise<void> {
   const card = await getCard(cardId)
   if (!card) return
 
