@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
+import DueNotify from './DueNotify'
 
 const navItems = [
   { to: '/', icon: '🏠', label: 'Home' },
@@ -10,6 +11,7 @@ const navItems = [
 export default function Layout() {
   return (
     <div className="app-layout">
+      <DueNotify />
       <main className="app-main">
         <Outlet />
       </main>
