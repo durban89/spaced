@@ -56,8 +56,8 @@ export default function DueNotify() {
       <>
         {!permissionRequested && (
           <div className="notify-permission-banner">
-            <span>开启通知，到时间提醒你复习</span>
-            <button className="btn btn-sm btn-primary" onClick={handleEnableNotify}>开启</button>
+            <span>Enable notifications to get reminded when cards are due</span>
+            <button className="btn btn-sm btn-primary" onClick={handleEnableNotify}>Enable</button>
           </div>
         )}
       </>
@@ -68,7 +68,7 @@ export default function DueNotify() {
     <div className="due-banner">
       <div className="due-banner-header">
         <span className="due-banner-icon">⏰</span>
-        <span className="due-banner-title">{dueCards.length} 张卡片需要复习</span>
+        <span className="due-banner-title">{dueCards.length} cards due for review</span>
         <button className="btn btn-sm btn-ghost" onClick={handleDismiss}>✕</button>
       </div>
       <div className="due-banner-list">
@@ -79,11 +79,11 @@ export default function DueNotify() {
           </div>
         ))}
         {dueCards.length > 3 && (
-          <div className="due-banner-more">还有 {dueCards.length - 3} 张...</div>
+          <div className="due-banner-more">{dueCards.length - 3} more...</div>
         )}
       </div>
       <button className="btn btn-primary btn-lg" onClick={handleGoReview}>
-        立即复习
+        Review Now
       </button>
     </div>
   )
