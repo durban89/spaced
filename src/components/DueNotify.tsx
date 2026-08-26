@@ -1,6 +1,12 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { checkAndNotify, requestNotificationPermission, startPeriodicCheck } from '../notifications'
+import { checkAndNotify, requestNotificationPermission, startPeriodicCheck, stopPeriodicCheck } from '../notifications'
+
+let globalForceCheck: (() => Promise<void>) | null = null
+
+export function forceCheckDue() {
+  globalForceCheck?.()
+}
 
 export default function DueNotify() {
   const navigate = useNavigate()
@@ -8,15 +14,7 @@ export default function DueNotify() {
   const [showBanner, setShowBanner] = useState(false)
   const [permissionRequested, setPermissionRequested] = useState(false)
 
-  useEffect(() => {
-    checkDue()
-    startPeriodicCheck(() => {
-      checkDue()
-    })
-    return () => {}
-  }, [])
-
-  const checkDue = async () => {
+  const checkDue = useCallback(async () => {
     const { count, cards } = await checkAndNotify()
     if (count > 0) {
       setDueCards(cards)
@@ -24,23 +22,34 @@ export default function DueNotify() {
     } else {
       setShowBanner(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    globalForceCheck = checkDue
+    checkDue()
+    startPeriodicCheck(() => checkDue())
+
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') checkDue()
+    }
+    document.addEventListener('visibilitychange', onVisibility)
+
+    return () => {
+      stopPeriodicCheck()
+      document.removeEventListener('visibilitychange', onVisibility)
+      globalForceCheck = null
+    }
+  }, [checkDue])
 
   const handleEnableNotify = async () => {
     const granted = await requestNotificationPermission()
     setPermissionRequested(true)
-    if (granted) {
-      checkDue()
-    }
+    if (granted) checkDue()
   }
 
-  const handleDismiss = () => {
-    setShowBanner(false)
-  }
+  const handleDismiss = () => setShowBanner(false)
 
-  const handleGoReview = () => {
-    navigate('/review')
-  }
+  const handleGoReview = () => navigate('/review')
 
   if (!showBanner || dueCards.length === 0) {
     return (

@@ -1,6 +1,6 @@
 import { getDueCards } from './db'
 
-const CHECK_INTERVAL = 60 * 1000
+const CHECK_INTERVAL = 10 * 1000
 const NOTIFIED_KEY = 'notified-due'
 let timer: ReturnType<typeof setInterval> | null = null
 

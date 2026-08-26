@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getDueCards } from '../db'
 import { processReview, recordStudyDay } from '../scheduler'
+import { forceCheckDue } from '../components/DueNotify'
 import CardFlip from '../components/CardFlip'
 import type { Card, ReviewResult } from '../types'
 
@@ -29,6 +30,7 @@ export default function Review() {
 
     await processReview(card.id, result)
     recordStudyDay()
+    forceCheckDue()
 
     if (currentIndex + 1 < dueCards.length) {
       setCurrentIndex(currentIndex + 1)
