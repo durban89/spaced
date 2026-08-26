@@ -46,7 +46,6 @@ export async function checkAndNotify(): Promise<{ count: number; cards: { questi
       body: `${newCount} 张卡片需要复习\n${preview.join('\n')}`,
       icon: '/memory/icons/icon-192.png',
       tag: 'due-cards',
-      renotify: true,
     })
 
     setNotifiedCount(count)

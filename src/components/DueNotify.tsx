@@ -10,7 +10,7 @@ export default function DueNotify() {
 
   useEffect(() => {
     checkDue()
-    startPeriodicCheck((count) => {
+    startPeriodicCheck(() => {
       checkDue()
     })
     return () => {}
