@@ -8,20 +8,32 @@ import {
   deleteDoc,
   query,
   where,
+  type Firestore,
 } from 'firebase/firestore'
-import { db } from './firebase'
 import { getCurrentUser } from './auth'
 import type { Card, Stats } from './types'
 
-function userCardsRef() {
+let _db: Firestore | null = null
+
+async function getDb(): Promise<Firestore> {
+  if (!_db) {
+    const { db } = await import('./firebase')
+    _db = db
+  }
+  return _db
+}
+
+async function userCardsRef() {
   const user = getCurrentUser()
   if (!user) throw new Error('Not authenticated')
+  const db = await getDb()
   return collection(db, 'users', user.uid, 'cards')
 }
 
-function cardRef(id: string) {
+async function cardRef(id: string) {
   const user = getCurrentUser()
   if (!user) throw new Error('Not authenticated')
+  const db = await getDb()
   return doc(db, 'users', user.uid, 'cards', id)
 }
 
@@ -29,7 +41,8 @@ export async function addCard(
   card: Omit<Card, 'id' | 'level' | 'nextReview' | 'reviewHistory' | 'createdAt' | 'updatedAt'>
 ): Promise<string> {
   const now = Date.now()
-  const docRef = await addDoc(userCardsRef(), {
+  const ref = await userCardsRef()
+  const docRef = await addDoc(ref, {
     ...card,
     level: 0,
     nextReview: now,
@@ -41,26 +54,31 @@ export async function addCard(
 }
 
 export async function updateCard(id: string, data: Partial<Card>): Promise<void> {
-  await updateDoc(cardRef(id), { ...data, updatedAt: Date.now() })
+  const ref = await cardRef(id)
+  await updateDoc(ref, { ...data, updatedAt: Date.now() })
 }
 
 export async function deleteCard(id: string): Promise<void> {
-  await deleteDoc(cardRef(id))
+  const ref = await cardRef(id)
+  await deleteDoc(ref)
 }
 
 export async function getCard(id: string): Promise<Card | undefined> {
-  const snap = await getDoc(cardRef(id))
+  const ref = await cardRef(id)
+  const snap = await getDoc(ref)
   if (!snap.exists()) return undefined
   return { id: snap.id, ...snap.data() } as Card
 }
 
 export async function getAllCards(): Promise<Card[]> {
-  const snap = await getDocs(userCardsRef())
+  const ref = await userCardsRef()
+  const snap = await getDocs(ref)
   return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Card))
 }
 
 export async function getCardsByCategory(category: string): Promise<Card[]> {
-  const q = query(userCardsRef(), where('category', '==', category))
+  const ref = await userCardsRef()
+  const q = query(ref, where('category', '==', category))
   const snap = await getDocs(q)
   return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Card))
 }
@@ -104,9 +122,11 @@ export async function importData(cards: Card[]): Promise<void> {
   for (const card of cards) {
     const { id, ...rest } = card
     if (id) {
-      await updateDoc(cardRef(id), rest)
+      const ref = await cardRef(id)
+      await updateDoc(ref, rest)
     } else {
-      await addDoc(userCardsRef(), rest)
+      const ref = await userCardsRef()
+      await addDoc(ref, rest)
     }
   }
 }
