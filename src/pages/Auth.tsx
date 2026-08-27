@@ -41,7 +41,7 @@ export default function Auth() {
               </g>
             </svg>
           </div>
-          <h1>Ebbinghaus Memory</h1>
+          <h1>Spaced</h1>
           <p>Spaced repetition for efficient learning</p>
         </div>
 

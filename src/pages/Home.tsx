@@ -43,7 +43,7 @@ export default function Home() {
     <div className="page">
       <header className="page-header">
         <div>
-          <h1>Ebbinghaus Memory</h1>
+          <h1>Spaced</h1>
           <p className="subtitle">Spaced repetition for efficient learning</p>
         </div>
         <button className="btn btn-ghost btn-sm" onClick={() => logout()} title="Sign out">

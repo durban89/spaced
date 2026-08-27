@@ -1,6 +1,6 @@
 {
-  "name": "Ebbinghaus Memory",
-  "short_name": "Memory",
+  "name": "Spaced",
+  "short_name": "Spaced",
   "description": "Spaced repetition for efficient learning",
   "start_url": "/spaced/",
   "display": "standalone",
