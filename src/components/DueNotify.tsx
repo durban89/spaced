@@ -8,11 +8,18 @@ export function forceCheckDue() {
   globalForceCheck?.()
 }
 
+type PermissionState = 'default' | 'granted' | 'denied'
+
+function getPermission(): PermissionState {
+  if (!('Notification' in window)) return 'denied'
+  return Notification.permission as PermissionState
+}
+
 export default function DueNotify() {
   const navigate = useNavigate()
   const [dueCards, setDueCards] = useState<{ question: string; category: string }[]>([])
   const [showBanner, setShowBanner] = useState(false)
-  const [permissionRequested, setPermissionRequested] = useState(false)
+  const [permission, setPermission] = useState<PermissionState>(getPermission)
 
   const checkDue = useCallback(async () => {
     const { count, cards } = await checkAndNotify()
@@ -42,7 +49,7 @@ export default function DueNotify() {
 
   const handleEnableNotify = async () => {
     const granted = await requestNotificationPermission()
-    setPermissionRequested(true)
+    setPermission(granted ? 'granted' : 'denied')
     if (granted) checkDue()
   }
 
@@ -51,22 +58,32 @@ export default function DueNotify() {
   const handleGoReview = () => navigate('/review')
 
   if (!showBanner || dueCards.length === 0) {
+    if (permission === 'granted') return null
+
     return (
-      <>
-        {!permissionRequested && (
-          <div className="notify-permission-banner">
+      <div className="notify-permission-banner">
+        {permission === 'denied' ? (
+          <>
+            <span>Notifications blocked. You won't receive reminders.</span>
+            <button className="btn btn-sm btn-ghost" onClick={handleEnableNotify}>Retry</button>
+          </>
+        ) : (
+          <>
             <span>Enable notifications to get reminded when cards are due</span>
             <button className="btn btn-sm btn-primary" onClick={handleEnableNotify}>Enable</button>
-          </div>
+          </>
         )}
-      </>
+      </div>
     )
   }
 
   return (
     <div className="due-banner">
       <div className="due-banner-header">
-        <span className="due-banner-icon">⏰</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10" />
+          <polyline points="12 6 12 12 16 14" />
+        </svg>
         <span className="due-banner-title">{dueCards.length} cards due for review</span>
         <button className="btn btn-sm btn-ghost" onClick={handleDismiss}>✕</button>
       </div>
