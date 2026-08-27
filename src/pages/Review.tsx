@@ -13,6 +13,7 @@ export default function Review() {
   const [isFlipped, setIsFlipped] = useState(false)
   const [isComplete, setIsComplete] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
     loadDueCards()
@@ -26,17 +27,22 @@ export default function Review() {
 
   const handleReview = async (result: ReviewResult) => {
     const card = dueCards[currentIndex]
-    if (!card || !card.id) return
+    if (!card || !card.id || submitting) return
 
-    await processReview(card.id, result)
-    recordStudyDay()
-    forceCheckDue()
+    setSubmitting(true)
+    try {
+      await processReview(card.id, result)
+      recordStudyDay()
+      forceCheckDue()
 
-    if (currentIndex + 1 < dueCards.length) {
-      setCurrentIndex(currentIndex + 1)
-      setIsFlipped(false)
-    } else {
-      setIsComplete(true)
+      if (currentIndex + 1 < dueCards.length) {
+        setCurrentIndex(currentIndex + 1)
+        setIsFlipped(false)
+      } else {
+        setIsComplete(true)
+      }
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -116,20 +122,23 @@ export default function Review() {
           <button
             className="btn btn-review btn-forgotten"
             onClick={() => handleReview('forgotten')}
+            disabled={submitting}
           >
-            Forgot
+            {submitting ? '...' : 'Forgot'}
           </button>
           <button
             className="btn btn-review btn-fuzzy"
             onClick={() => handleReview('fuzzy')}
+            disabled={submitting}
           >
-            Fuzzy
+            {submitting ? '...' : 'Fuzzy'}
           </button>
           <button
             className="btn btn-review btn-remembered"
             onClick={() => handleReview('remembered')}
+            disabled={submitting}
           >
-            Remembered
+            {submitting ? '...' : 'Remembered'}
           </button>
         </div>
       )}

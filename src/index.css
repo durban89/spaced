@@ -624,9 +624,15 @@ body {
   background: linear-gradient(135deg, #22c55e, #16a34a);
 }
 
-.btn-review:hover {
+.btn-review:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: var(--shadow-lg);
+}
+
+.btn-review:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .level-chart {
