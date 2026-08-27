@@ -29,7 +29,7 @@ export async function checkAndNotify(): Promise<{ count: number; cards: { questi
 
     new Notification('Ebbinghaus Memory', {
       body: `${count} cards due for review\n${preview.join('\n')}`,
-      icon: '/memory/icons/icon-192.png',
+      icon: '/spaced/icons/icon-192.png',
       tag: 'due-cards',
     })
 
