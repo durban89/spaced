@@ -26,7 +26,6 @@ export default function DueNotify() {
 
   useEffect(() => {
     globalForceCheck = checkDue
-    checkDue()
     startPeriodicCheck(() => checkDue())
 
     const onVisibility = () => {

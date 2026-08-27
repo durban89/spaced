@@ -37,21 +37,6 @@ export async function processReview(cardId: string, result: ReviewResult): Promi
   })
 }
 
-export function getIntervalLabel(level: number): string {
-  const ms = INTERVALS[level]
-  const minutes = Math.floor(ms / (1000 * 60))
-  const hours = Math.floor(ms / (1000 * 60 * 60))
-  const days = Math.floor(ms / (1000 * 60 * 60 * 24))
-
-  if (minutes < 60) return `${minutes}m`
-  if (hours < 24) return `${hours}h`
-  return `${days}d`
-}
-
-export function getDaysSince(timestamp: number): number {
-  return Math.floor((Date.now() - timestamp) / (1000 * 60 * 60 * 24))
-}
-
 export function getStreak(): number {
   const history = localStorage.getItem('streak')
   if (!history) return 0

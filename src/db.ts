@@ -8,6 +8,7 @@ import {
   deleteDoc,
   query,
   where,
+  orderBy,
   type Firestore,
 } from 'firebase/firestore'
 import { getCurrentUser } from './auth'
@@ -84,9 +85,10 @@ export async function getCardsByCategory(category: string): Promise<Card[]> {
 }
 
 export async function getDueCards(): Promise<Card[]> {
-  const all = await getAllCards()
-  const now = Date.now()
-  return all.filter((c) => c.nextReview <= now)
+  const ref = await userCardsRef()
+  const q = query(ref, where('nextReview', '<=', Date.now()), orderBy('nextReview', 'asc'))
+  const snap = await getDocs(q)
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Card))
 }
 
 export async function getCategories(): Promise<{ name: string; count: number }[]> {
@@ -101,32 +103,23 @@ export async function getCategories(): Promise<{ name: string; count: number }[]
 export async function getStats(): Promise<Stats> {
   const all = await getAllCards()
   const now = Date.now()
-  const dueToday = all.filter((c) => c.nextReview <= now).length
-  const mastered = all.filter((c) => c.level >= 6).length
-  const newCards = all.filter((c) => c.reviewHistory.length === 0).length
-  const categories = await getCategories()
+  let mastered = 0
+  let dueToday = 0
+  let newCards = 0
+  const catMap = new Map<string, number>()
+
+  for (const card of all) {
+    if (card.level >= 6) mastered++
+    if (card.nextReview <= now) dueToday++
+    if (card.reviewHistory.length === 0) newCards++
+    catMap.set(card.category, (catMap.get(card.category) || 0) + 1)
+  }
+
   return {
     total: all.length,
     mastered,
     dueToday,
     newCards,
-    categories,
-  }
-}
-
-export async function exportData(): Promise<Card[]> {
-  return getAllCards()
-}
-
-export async function importData(cards: Card[]): Promise<void> {
-  for (const card of cards) {
-    const { id, ...rest } = card
-    if (id) {
-      const ref = await cardRef(id)
-      await updateDoc(ref, rest)
-    } else {
-      const ref = await userCardsRef()
-      await addDoc(ref, rest)
-    }
+    categories: Array.from(catMap.entries()).map(([name, count]) => ({ name, count })),
   }
 }

@@ -20,18 +20,17 @@ export default function Cards() {
   const [newCategory, setNewCategory] = useState(CATEGORY_PRESETS[0])
   const [newQuestion, setNewQuestion] = useState('')
   const [newAnswer, setNewAnswer] = useState('')
-
-  useEffect(() => {
-    loadData()
-  }, [])
+  const [loading, setLoading] = useState(true)
 
   const loadData = async () => {
+    setLoading(true)
     const cats = await getCategories()
     setCategories(cats)
     const allCards = selectedCategory
       ? await getCardsByCategory(selectedCategory)
       : await getAllCards()
     setCards(allCards.sort((a, b) => b.updatedAt - a.updatedAt))
+    setLoading(false)
   }
 
   useEffect(() => {
@@ -145,7 +144,9 @@ export default function Cards() {
       </div>
 
       <div className="card-list">
-        {cards.length === 0 ? (
+        {loading ? (
+          <div className="loading">Loading...</div>
+        ) : cards.length === 0 ? (
           <div className="empty-state">
             <p>No cards yet</p>
             <p className="text-muted">Tap "+ Add" to create your first card</p>
