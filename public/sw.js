@@ -86,7 +86,7 @@ async function checkDueCards() {
     const preview = due.slice(0, 3).map((c) => c.question.slice(0, 40))
 
     self.registration.showNotification('Ebbinghaus Memory', {
-      body: `${due.length} 张卡片需要复习\n${preview.join('\n')}`,
+      body: `${due.length} cards due for review\n${preview.join('\n')}`,
       icon: '/spaced/icons/icon-192.png',
       tag: 'due-cards',
       renotify: true,
