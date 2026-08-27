@@ -27,7 +27,7 @@ export async function checkAndNotify(): Promise<{ count: number; cards: { questi
   if (oldestDue > lastNotified && 'Notification' in window && Notification.permission === 'granted') {
     const preview = due.slice(0, 3).map(c => c.question.slice(0, 40))
 
-    new Notification('Spaced', {
+    new Notification('Spaced - Ebbinghaus Memory', {
       body: `${count} cards due for review\n${preview.join('\n')}`,
       icon: '/spaced/icons/icon-192.png',
       tag: 'due-cards',
