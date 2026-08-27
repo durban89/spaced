@@ -61,7 +61,12 @@ export default function Review() {
           <h1>Review</h1>
         </header>
         <div className="empty-state">
-          <div className="empty-icon">🎉</div>
+          <div className="empty-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M9 12l2 2 4-4" />
+            </svg>
+          </div>
           <h2>All done for today!</h2>
           <p>No cards due for review</p>
           <button className="btn btn-primary" onClick={() => navigate('/')}>
@@ -79,7 +84,12 @@ export default function Review() {
           <h1>Review Complete</h1>
         </header>
         <div className="empty-state">
-          <div className="empty-icon">✅</div>
+          <div className="empty-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M9 12l2 2 4-4" />
+            </svg>
+          </div>
           <h2>Great job!</h2>
           <p>You reviewed {dueCards.length} cards</p>
           <button className="btn btn-primary" onClick={() => navigate('/')}>
