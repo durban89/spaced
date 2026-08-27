@@ -5,4 +5,7 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   base: '/memory/',
   plugins: [react()],
+  build: {
+    chunkSizeWarningLimit: 600,
+  },
 })
