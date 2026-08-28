@@ -32,8 +32,9 @@ A web app for memorizing knowledge using the Ebbinghaus forgetting curve. Built 
 2. **Deploy the scheduled reminder function** (requires Firebase Blaze plan, one-time):
 
    ```bash
+   pnpm install          # from repo root, installs functions deps too
    cd functions
-   pnpm install
+   pnpm build
    firebase login
    firebase deploy --only functions
    ```
