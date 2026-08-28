@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { checkAndNotify, requestNotificationPermission, startPeriodicCheck, stopPeriodicCheck } from '../notifications'
+import { checkAndNotify, startPeriodicCheck, stopPeriodicCheck } from '../notifications'
+import { setupPushSubscription, isPushSupportAvailable } from '../push'
 
 let globalForceCheck: (() => Promise<void>) | null = null
 
@@ -20,6 +21,8 @@ export default function DueNotify() {
   const [dueCards, setDueCards] = useState<{ question: string; category: string }[]>([])
   const [showBanner, setShowBanner] = useState(false)
   const [permission, setPermission] = useState<PermissionState>(getPermission)
+  const [pushSupported, setPushSupported] = useState<boolean | null>(null)
+  const [subscribing, setSubscribing] = useState(false)
 
   const checkDue = useCallback(async () => {
     const { count, cards } = await checkAndNotify()
@@ -28,6 +31,19 @@ export default function DueNotify() {
       setShowBanner(true)
     } else {
       setShowBanner(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    isPushSupportAvailable().then(setPushSupported)
+    if ('Notification' in window) {
+      const onPermissionChange = () => setPermission(getPermission())
+      Notification.requestPermission()
+      navigator.permissions?.query?.({ name: 'notifications' })
+        .then((status) => {
+          status.onchange = onPermissionChange
+        })
+        .catch(() => {})
     }
   }, [])
 
@@ -48,9 +64,14 @@ export default function DueNotify() {
   }, [checkDue])
 
   const handleEnableNotify = async () => {
-    const granted = await requestNotificationPermission()
-    setPermission(granted ? 'granted' : 'denied')
-    if (granted) checkDue()
+    setSubscribing(true)
+    try {
+      const granted = await setupPushSubscription()
+      setPermission(granted ? 'granted' : 'denied')
+      if (granted) checkDue()
+    } finally {
+      setSubscribing(false)
+    }
   }
 
   const handleDismiss = () => setShowBanner(false)
@@ -58,19 +79,27 @@ export default function DueNotify() {
   const handleGoReview = () => navigate('/review')
 
   if (!showBanner || dueCards.length === 0) {
-    if (permission === 'granted') return null
+    if (permission === 'granted' && pushSupported !== false) return null
 
     return (
       <div className="notify-permission-banner">
         {permission === 'denied' ? (
           <>
             <span>Notifications blocked. You won't receive reminders.</span>
-            <button className="btn btn-sm btn-ghost" onClick={handleEnableNotify}>Retry</button>
+            <button className="btn btn-sm btn-ghost" onClick={handleEnableNotify} disabled={subscribing}>
+              {subscribing ? '...' : 'Retry'}
+            </button>
+          </>
+        ) : pushSupported === false ? (
+          <>
+            <span>Push notifications unavailable (VITE_FIREBASE_VAPID_KEY not configured).</span>
           </>
         ) : (
           <>
-            <span>Enable notifications to get reminded when cards are due</span>
-            <button className="btn btn-sm btn-primary" onClick={handleEnableNotify}>Enable</button>
+            <span>Enable notifications to get reminded on your phone</span>
+            <button className="btn btn-sm btn-primary" onClick={handleEnableNotify} disabled={subscribing}>
+              {subscribing ? '...' : 'Enable'}
+            </button>
           </>
         )}
       </div>

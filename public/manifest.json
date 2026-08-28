@@ -4,6 +4,7 @@
   "description": "Spaced repetition for efficient learning",
   "start_url": "/spaced/",
   "display": "standalone",
+  "gcm_sender_id": "103953800507",
   "background_color": "#fafafa",
   "theme_color": "#2563eb",
   "icons": [
