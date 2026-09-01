@@ -523,7 +523,7 @@ body {
 }
 
 .review-card-wrapper.not-flipped {
-  justify-content: center;
+  flex: 0 0 auto;
 }
 
 .review-card-wrapper.not-flipped .card-flip-container {
