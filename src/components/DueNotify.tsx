@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import {
   checkAndNotify,
   requestNotificationPermission,
@@ -22,6 +22,7 @@ export function forceCheckDue() {
 
 export default function DueNotify() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [dueCards, setDueCards] = useState<{ question: string; category: string }[]>([])
   const [showBanner, setShowBanner] = useState(false)
   const [permission, setPermission] = useState<PermissionState>(getPermission)
@@ -70,6 +71,10 @@ export default function DueNotify() {
   const handleDismiss = () => setShowBanner(false)
 
   const handleGoReview = () => navigate('/review')
+
+  if (location.pathname === '/review') {
+    return null
+  }
 
   if (!showBanner || dueCards.length === 0) {
     if (permission === 'granted') return null
