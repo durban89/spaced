@@ -1,9 +1,16 @@
-import { useState } from 'react'
-import { signInWithGoogle } from '../auth'
+import { useState, useEffect } from 'react'
+import { signInWithGoogle, resolveRedirectResult } from '../auth'
 
 export default function Auth() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    resolveRedirectResult().catch((err: unknown) => {
+      const msg = err instanceof Error ? err.message : 'Failed'
+      setError(msg)
+    })
+  }, [])
 
   const handleGoogleLogin = async () => {
     setError('')
@@ -12,9 +19,6 @@ export default function Auth() {
       await signInWithGoogle()
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed'
-      if (msg.includes('auth/popup-closed-by-user')) {
-        return
-      }
       setError(msg)
     } finally {
       setLoading(false)
