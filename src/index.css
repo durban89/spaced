@@ -81,6 +81,11 @@ body {
   overflow-y: auto;
 }
 
+.app-main:has(.review-page) {
+  padding-bottom: 0;
+  overflow: hidden;
+}
+
 .bottom-nav {
   position: fixed;
   bottom: 0;
@@ -481,7 +486,8 @@ body {
 .review-page {
   display: flex;
   flex-direction: column;
-  min-height: calc(100dvh - var(--nav-height));
+  height: calc(100dvh - var(--nav-height));
+  overflow: hidden;
 }
 
 .review-progress {
@@ -507,13 +513,18 @@ body {
 }
 
 .review-card-wrapper {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   padding: 16px 0;
 }
 
 .card-flip-container {
   width: 100%;
   max-width: 380px;
-  height: 280px;
+  height: 100%;
+  flex: 1;
   perspective: 1200px;
   cursor: pointer;
   margin: 0 auto;
