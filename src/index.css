@@ -288,6 +288,7 @@ body {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 20px;
+  margin-bottom: 20px;
   box-shadow: var(--shadow-xs);
 }
 
