@@ -522,6 +522,15 @@ body {
   padding: 16px 0;
 }
 
+.review-card-wrapper.not-flipped {
+  justify-content: center;
+}
+
+.review-card-wrapper.not-flipped .card-flip-container {
+  flex: 0 0 auto;
+  height: 320px;
+}
+
 .card-flip-container {
   width: 100%;
   max-width: 380px;

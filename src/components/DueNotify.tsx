@@ -72,7 +72,7 @@ export default function DueNotify() {
 
   const handleGoReview = () => navigate('/review')
 
-  if (location.pathname === '/review') {
+  if (location.pathname !== '/') {
     return null
   }
 

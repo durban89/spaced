@@ -118,7 +118,7 @@ export default function Review() {
         />
       </div>
 
-      <div className="review-card-wrapper">
+      <div className={`review-card-wrapper ${isFlipped ? '' : 'not-flipped'}`}>
         <CardFlip
           key={currentCard.id}
           question={currentCard.question}
