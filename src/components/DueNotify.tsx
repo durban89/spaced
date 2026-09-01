@@ -22,7 +22,7 @@ export function forceCheckDue() {
 
 export default function DueNotify() {
   const navigate = useNavigate()
-  const [dueCards, setDueCards] = useState<{ question: string; category: string; title?: string }[]>([])
+  const [dueCards, setDueCards] = useState<{ question: string; category: string }[]>([])
   const [showBanner, setShowBanner] = useState(false)
   const [permission, setPermission] = useState<PermissionState>(getPermission)
   const [asking, setAsking] = useState(false)
@@ -109,7 +109,7 @@ export default function DueNotify() {
         {dueCards.slice(0, 3).map((card, i) => (
           <div key={i} className="due-banner-item">
             <span className="due-banner-category">{card.category}</span>
-            <span className="due-banner-question">{card.title || card.question.slice(0, 50)}{!card.title && card.question.length > 50 ? '...' : ''}</span>
+            <span className="due-banner-question">{card.question.slice(0, 50)}{card.question.length > 50 ? '...' : ''}</span>
           </div>
         ))}
         {dueCards.length > 3 && (

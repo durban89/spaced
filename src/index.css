@@ -565,25 +565,6 @@ body {
   margin-bottom: 16px;
 }
 
-.card-title {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--primary);
-  letter-spacing: -0.01em;
-  margin-bottom: 6px;
-}
-
-.card-back .card-title {
-  color: #bfdbfe;
-}
-
-.card-title-list {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--primary);
-  margin-bottom: 6px;
-}
-
 .card-content {
   flex: 1;
   font-size: 17px;
@@ -595,6 +576,24 @@ body {
 
 .card-back .card-content {
   font-weight: 400;
+}
+
+.card-back-question {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+}
+
+.card-back-question .card-label {
+  margin-bottom: 6px;
+}
+
+.card-back-question-text {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.45;
+  white-space: pre-wrap;
 }
 
 .card-hint {

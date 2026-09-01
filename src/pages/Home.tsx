@@ -10,7 +10,6 @@ export default function Home() {
   const navigate = useNavigate()
   const [stats, setStats] = useState<Stats | null>(null)
   const [category, setCategory] = useState(CATEGORY_PRESETS[0])
-  const [title, setTitle] = useState('')
   const [question, setQuestion] = useState('')
   const [answer, setAnswer] = useState('')
   const [streak, setStreak] = useState(0)
@@ -28,8 +27,7 @@ export default function Home() {
 
   const handleAdd = async () => {
     if (!question.trim() || !answer.trim()) return
-    await addCard({ title: title.trim(), category, question: question.trim(), answer: answer.trim() })
-    setTitle('')
+    await addCard({ category, question: question.trim(), answer: answer.trim() })
     setQuestion('')
     setAnswer('')
     setShowForm(false)
@@ -107,14 +105,6 @@ export default function Home() {
                   <option key={c} value={c}>{c}</option>
                 ))}
               </select>
-            </div>
-            <div className="form-group">
-              <label>Title</label>
-              <input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Enter title (optional)..."
-              />
             </div>
             <div className="form-group">
               <label>Question</label>
