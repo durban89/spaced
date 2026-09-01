@@ -12,7 +12,7 @@ export async function requestNotificationPermission(): Promise<boolean> {
   return result === 'granted'
 }
 
-export async function checkAndNotify(): Promise<{ count: number; cards: { question: string; category: string }[] }> {
+export async function checkAndNotify(): Promise<{ count: number; cards: { question: string; title?: string; category: string }[] }> {
   const due = await getDueCards()
   const count = due.length
 
@@ -22,13 +22,15 @@ export async function checkAndNotify(): Promise<{ count: number; cards: { questi
   }
 
   const lastNotified = parseInt(localStorage.getItem(LAST_NOTIFIED_KEY) || '0', 10)
-  const oldestDue = Math.min(...due.map(c => c.nextReview))
+  const latestDue = Math.max(...due.map(c => c.nextReview))
 
-  if (oldestDue > lastNotified && 'Notification' in window && Notification.permission === 'granted') {
-    const preview = due.slice(0, 3).map(c => c.question.slice(0, 40))
+  if (latestDue > lastNotified && 'Notification' in window && Notification.permission === 'granted') {
+    const preview = due
+      .slice(0, 3)
+      .map(c => (c.title || c.question).slice(0, 40))
 
     new Notification('Spaced - Ebbinghaus Memory', {
-      body: `${count} cards due for review\n${preview.join('\n')}`,
+      body: `${count} ${count === 1 ? 'card' : 'cards'} due for review\n${preview.join('\n')}`,
       icon: '/spaced/icons/icon-192.png',
       tag: 'due-cards',
     })
@@ -38,7 +40,7 @@ export async function checkAndNotify(): Promise<{ count: number; cards: { questi
 
   return {
     count,
-    cards: due.map(c => ({ question: c.question, category: c.category })),
+    cards: due.map(c => ({ question: c.question, title: c.title, category: c.category })),
   }
 }
 

@@ -10,7 +10,6 @@ A web app for memorizing knowledge using the Ebbinghaus forgetting curve. Built 
 - **Category Management** — Organize cards by subject, with filtering support
 - **Statistics** — Mastery distribution, day streak, recent activity
 - **PWA** — Installable on mobile and desktop, works offline
-- **Push Notifications** — FCM web push: get reminded on your phone even when the app is closed
 - **Dark Mode** — Automatic theme based on system preference
 
 ## Tech Stack
@@ -19,41 +18,7 @@ A web app for memorizing knowledge using the Ebbinghaus forgetting curve. Built 
 - Vite
 - IndexedDB (via idb)
 - React Router
-- Firebase (Auth, Firestore, Cloud Messaging)
-
-## Push Notifications Setup
-
-1. **Firebase Console** → Project Settings → Cloud Messaging → copy the **Web push certificates → Key pair** and set it in `.env`:
-
-   ```
-   VITE_FIREBASE_VAPID_KEY="your-vapid-public-key"
-   ```
-
-2. **Deploy the scheduled reminder function** (requires Firebase Blaze plan, one-time):
-
-   ```bash
-   pnpm install          # from repo root, installs functions deps too
-   cd functions
-   pnpm build
-   firebase login
-   firebase deploy --only functions
-   ```
-
-3. **Deploy Firestore rules**:
-
-   ```bash
-   firebase deploy --only firestore:rules
-   ```
-
-4. Build & deploy the web app (the build injects Firebase config into
-   `firebase-messaging-sw.js` and `gcm_sender_id` into the manifest automatically).
-
-Users then tap **Enable** on the notification banner → the FCM token is stored in
-`users/{uid}/fcmTokens`. The scheduled Cloud Function checks every 30 minutes for
-due cards and pushes a notification.
-
-> Note: on iOS (Safari 16.4+) and Android (Chrome), push requires the app to be
-> installed to the home screen (PWA) and HTTPS.
+- Firebase (Auth, Firestore)
 
 ## Development
 

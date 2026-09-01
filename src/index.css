@@ -565,6 +565,25 @@ body {
   margin-bottom: 16px;
 }
 
+.card-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: -0.01em;
+  margin-bottom: 6px;
+}
+
+.card-back .card-title {
+  color: #bfdbfe;
+}
+
+.card-title-list {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 6px;
+}
+
 .card-content {
   flex: 1;
   font-size: 17px;

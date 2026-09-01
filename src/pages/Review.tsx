@@ -121,6 +121,7 @@ export default function Review() {
       <div className="review-card-wrapper">
         <CardFlip
           key={currentCard.id}
+          title={currentCard.title}
           question={currentCard.question}
           answer={currentCard.answer}
           onFlip={() => setIsFlipped(true)}

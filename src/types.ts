@@ -1,5 +1,6 @@
 export interface Card {
   id?: string
+  title: string
   category: string
   question: string
   answer: string

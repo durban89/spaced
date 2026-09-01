@@ -14,10 +14,12 @@ export default function Cards() {
   const [categories, setCategories] = useState<{ name: string; count: number }[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string>('')
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [editTitle, setEditTitle] = useState('')
   const [editQuestion, setEditQuestion] = useState('')
   const [editAnswer, setEditAnswer] = useState('')
   const [showAddForm, setShowAddForm] = useState(false)
   const [newCategory, setNewCategory] = useState(CATEGORY_PRESETS[0])
+  const [newTitle, setNewTitle] = useState('')
   const [newQuestion, setNewQuestion] = useState('')
   const [newAnswer, setNewAnswer] = useState('')
   const [loading, setLoading] = useState(true)
@@ -40,10 +42,12 @@ export default function Cards() {
   const handleAdd = async () => {
     if (!newQuestion.trim() || !newAnswer.trim()) return
     await addCard({
+      title: newTitle.trim(),
       category: newCategory,
       question: newQuestion.trim(),
       answer: newAnswer.trim(),
     })
+    setNewTitle('')
     setNewQuestion('')
     setNewAnswer('')
     setShowAddForm(false)
@@ -52,6 +56,7 @@ export default function Cards() {
 
   const handleEdit = (card: Card) => {
     setEditingId(card.id!)
+    setEditTitle(card.title || '')
     setEditQuestion(card.question)
     setEditAnswer(card.answer)
   }
@@ -59,6 +64,7 @@ export default function Cards() {
   const handleSaveEdit = async () => {
     if (editingId === null) return
     await updateCard(editingId, {
+      title: editTitle.trim(),
       question: editQuestion.trim(),
       answer: editAnswer.trim(),
     })
@@ -96,6 +102,14 @@ export default function Cards() {
                 <option key={c} value={c}>{c}</option>
               ))}
             </select>
+          </div>
+          <div className="form-group">
+            <label>Title</label>
+            <input
+              value={newTitle}
+              onChange={(e) => setNewTitle(e.target.value)}
+              placeholder="Enter title (optional)..."
+            />
           </div>
           <div className="form-group">
             <label>Question</label>
@@ -156,6 +170,11 @@ export default function Cards() {
             <div key={card.id} className="card-item">
               {editingId === card.id ? (
                 <div className="card-edit">
+                  <input
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    placeholder="Title"
+                  />
                   <textarea
                     value={editQuestion}
                     onChange={(e) => setEditQuestion(e.target.value)}
@@ -177,6 +196,7 @@ export default function Cards() {
                     <span className="card-category">{card.category}</span>
                     <span className="card-level">Level {card.level}</span>
                   </div>
+                  {card.title && <div className="card-title-list">{card.title}</div>}
                   <div className="card-question">{card.question}</div>
                   <div className="card-answer">{card.answer}</div>
                   <div className="card-actions">

@@ -5,11 +5,6 @@ const STATIC_ASSETS = [
   '/spaced/manifest.json',
 ]
 
-const DB_NAME = 'aosibin-db'
-const DB_VERSION = 1
-const STORE_NAME = 'cards'
-const CHECK_INTERVAL = 5 * 60 * 1000
-
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
@@ -24,7 +19,6 @@ self.addEventListener('activate', (event) => {
     )
   )
   self.clients.claim()
-  startDueCheck()
 })
 
 self.addEventListener('fetch', (event) => {
@@ -42,61 +36,3 @@ self.addEventListener('fetch', (event) => {
     })
   )
 })
-
-self.addEventListener('notificationclick', (event) => {
-  event.notification.close()
-  event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      for (const client of clientList) {
-        if (client.url.includes('/spaced/') && 'focus' in client) {
-          return client.focus()
-        }
-      }
-      return clients.openWindow('/spaced/')
-    })
-  )
-})
-
-function getDueCards() {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, DB_VERSION)
-    req.onsuccess = (e) => {
-      const db = e.target.result
-      const tx = db.transaction(STORE_NAME, 'readonly')
-      const store = tx.objectStore(STORE_NAME)
-      const getAll = store.getAll()
-      getAll.onsuccess = () => {
-        const now = Date.now()
-        resolve(getAll.result.filter((c) => c.nextReview <= now))
-      }
-      getAll.onerror = () => reject(getAll.error)
-    }
-    req.onerror = () => reject(req.error)
-  })
-}
-
-async function checkDueCards() {
-  try {
-    const due = await getDueCards()
-    if (due.length === 0) return
-
-    const lastCount = parseInt((await self.registration?.storage?.get?.('last-due-count')) || '0')
-    if (due.length === lastCount) return
-
-    const preview = due.slice(0, 3).map((c) => c.question.slice(0, 40))
-
-    self.registration.showNotification('Spaced - Ebbinghaus Memory', {
-      body: `${due.length} cards due for review\n${preview.join('\n')}`,
-      icon: '/spaced/icons/icon-192.png',
-      tag: 'due-cards',
-      renotify: true,
-    })
-  } catch (e) {
-    // silent fail
-  }
-}
-
-function startDueCheck() {
-  checkDueCards()
-  setInterval(checkDueCards, CHECK_INTERVAL)
-}
