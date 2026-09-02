@@ -40,5 +40,6 @@ export const CATEGORY_PRESETS = [
   'PMP',
   'Software Engineer',
   'Information Security',
+  'French',
   'Other',
 ]
