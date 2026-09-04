@@ -1,5 +1,6 @@
 import { INTERVALS, type Card, type ReviewResult } from './types'
 import { updateCard, getCard } from './db'
+import { scheduleCardNotification, cancelCardNotification } from './nativeNotifications'
 
 export function scheduleNext(card: Card, result: ReviewResult): { level: number; nextReview: number } {
   let { level } = card
@@ -27,6 +28,7 @@ export async function processReview(cardId: string, result: ReviewResult): Promi
   if (!card) return
 
   const { level, nextReview } = scheduleNext(card, result)
+  const updated = { ...card, level, nextReview }
   await updateCard(cardId, {
     level,
     nextReview,
@@ -35,6 +37,16 @@ export async function processReview(cardId: string, result: ReviewResult): Promi
       { date: Date.now(), result },
     ],
   })
+  await syncNativeSchedule(updated)
+}
+
+export async function syncNativeSchedule(card: Card): Promise<void> {
+  const now = Date.now()
+  if (card.nextReview > now) {
+    await scheduleCardNotification(card)
+  } else {
+    await cancelCardNotification(card.id || '')
+  }
 }
 
 export function getStreak(): number {

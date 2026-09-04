@@ -4,6 +4,7 @@ import { getDueCards } from '../db'
 import { processReview, recordStudyDay } from '../scheduler'
 import { forceCheckDue } from '../components/DueNotify'
 import CardFlip from '../components/CardFlip'
+import { playForgotten, playFuzzy, playRemembered } from '../sounds'
 import type { Card, ReviewResult } from '../types'
 
 export default function Review() {
@@ -28,6 +29,10 @@ export default function Review() {
   const handleReview = async (result: ReviewResult) => {
     const card = dueCards[currentIndex]
     if (!card || !card.id || submitting) return
+
+    if (result === 'forgotten') playForgotten()
+    else if (result === 'fuzzy') playFuzzy()
+    else playRemembered()
 
     setSubmitting(true)
     try {

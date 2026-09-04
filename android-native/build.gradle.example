@@ -1,0 +1,20 @@
+// 将这些内容合并进 Capacitor 生成的 android/app/build.gradle
+// 依赖：androidx.core（已随 Capacitor 引入，无需额外配置）
+
+android {
+    defaultConfig {
+        // 确保 targetSdk 足够（Android 13+ 需要 POST_NOTIFICATIONS）
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+}
+
+dependencies {
+    implementation "androidx.core:core-ktx:1.12.0"
+    // R.drawable.ic_stat_name 若不存在可改用 android.R.drawable.ic_menu_agenda 或自行加入小图标
+}
