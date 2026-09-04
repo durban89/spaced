@@ -1,4 +1,4 @@
-package com.aosibin.spaced
+package com.zhangdapeng.spaced
 
 import android.Manifest
 import android.app.AlarmManager
@@ -117,7 +117,7 @@ class NotificationSchedulerPlugin : Plugin() {
 
     companion object {
         const val CHANNEL_ID = "review_reminders"
-        const val ACTION_REVIEW_ALARM = "com.aosibin.spaced.REVIEW_ALARM"
+        const val ACTION_REVIEW_ALARM = "com.zhangdapeng.spaced.REVIEW_ALARM"
         const val EXTRA_CARD_ID = "card_id"
         const val EXTRA_QUESTION = "question"
         const val EXTRA_CATEGORY = "category"

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'aosibin-v1'
+const CACHE_NAME = 'zhangdapeng-v1'
 const STATIC_ASSETS = [
   '/spaced/',
   '/spaced/index.html',

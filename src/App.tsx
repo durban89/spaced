@@ -2,6 +2,13 @@ import { lazy, Suspense, useState, useEffect } from 'react'
 import { HashRouter, Routes, Route } from 'react-router-dom'
 import { onAuthChange } from './auth'
 import Layout from './components/Layout'
+import {
+  checkNativeNotificationPermission,
+  isNativeNotificationsAvailable,
+  requestNativeNotificationPermission,
+  resyncAllSchedules,
+} from './nativeNotifications'
+import { getAllCards } from './db'
 
 const Home = lazy(() => import('./pages/Home'))
 const Cards = lazy(() => import('./pages/Cards'))
@@ -28,6 +35,41 @@ export default function App() {
     })
     return unsubscribe
   }, [])
+
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      if (!(await isNativeNotificationsAvailable())) return
+      if (await checkNativeNotificationPermission()) return
+      // 登录后首次启动主动请求通知权限（系统弹窗，仅触发一次）
+      await requestNativeNotificationPermission()
+      if (!cancelled) {
+        // 权限状态由 DueNotify 在 resume 时刷新，无需额外处理
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user])
+
+  useEffect(() => {
+    if (!user) return
+    let cancelled = false
+    ;(async () => {
+      try {
+        // 每次登录后重排所有未来提醒，兜底重启/进程被杀导致的排期丢失
+        const cards = await getAllCards()
+        if (!cancelled) await resyncAllSchedules(cards)
+      } catch (e) {
+        console.warn('resyncAllSchedules failed', e)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user])
 
   if (loading) {
     return (

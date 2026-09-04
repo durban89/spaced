@@ -23,7 +23,7 @@ nextReview 时间戳 ────┐
 
 | 文件 | 说明 |
 |------|------|
-| `capacitor.config.ts` | Capacitor 配置（appId `com.aosibin.spaced`、webDir `dist`） |
+| `capacitor.config.ts` | Capacitor 配置（appId `com.zhangdapeng.spaced`、webDir `dist`） |
 | `src/nativeNotifications.ts` | Web↔原生桥接层；非原生环境自动降级为无操作 |
 | `src/scheduler.ts` | `processReview` 后调用 `syncNativeSchedule` 同步下一次提醒 |
 | `src/db.ts` | `addCard` 登记提醒、`deleteCard` 取消提醒 |
@@ -40,26 +40,38 @@ nextReview 时间戳 ────┐
 | `android-native/AndroidManifest.xml` | 所需权限与 receiver 声明（模板） |
 | `android-native/build.gradle.example` | 原生依赖配置示例 |
 
-## 构建步骤（需要 Android SDK + Java 17 + Android Studio）
+## Google 登录（原生方式）
 
-> 当前开发环境（本机）尚未安装上述工具链，以下步骤需在有 Android 环境的机器上执行。
+APK 内使用 **原生 Google Sign-In**（`@capacitor-firebase/authentication`），需在 Firebase 控制台完成以下一次性配置：
+
+1. **添加 Android 应用**：项目设置 → 添加应用 → Android，包名填 `com.zhangdapeng.spaced`
+2. **填写 SHA-1 指纹**：debug 签名可通过 `keytool` 获取后再填入；
+3. **下载 `google-services.json`** 放到 `android/app/`（`build.gradle` 已自动检测并应用）
+4. **启用 Google 登录**：Authentication → Sign-in method → 启用 Google
+
+> 若登录时弹窗秒退或报 `DEVELOPER_ERROR`，通常是 SHA-1 与 Firebase 控制台登记的不匹配。
+
+## 构建步骤（需要 Android SDK + Java 21 + Android Studio）
+
+> Capitor 7 需要 Java 21（`JAVA_HOME` 指向 JDK 21，如 `/usr/lib/jvm/java-21-openjdk-amd64`），SDK 位置在 `android/local.properties`（`sdk.dir`）。
 
 ```bash
 # 1. 安装依赖（已在 package.json 配置好版本）
 pnpm install
 
-# 2. 构建 Web 产物到 dist/
+# 2. 构建 Web 产物到 dist/（APK 打包需 CAPACITOR_BUILD=1 用相对资源路径）
+export CAPACITOR_BUILD=1
 pnpm build
 
 # 3. 生成原生 Android 工程（首次执行一次）
 pnpm exec cap add android
 
-# 4. 将 android-native/ 里的 Kotlin 文件复制到 android/app/src/main/java/com/aosibin/spaced/
+# 4. 将 android-native/ 里的 Kotlin 文件复制到 android/app/src/main/java/com/zhangdapeng/spaced/
 cp android-native/NotificationSchedulerPlugin.kt \
    android-native/AlarmReceiver.kt \
    android-native/DeepLinkHelper.kt \
    android-native/BootReceiver.kt \
-   android/app/src/main/java/com/aosibin/spaced/
+   android/app/src/main/java/com/zhangdapeng/spaced/
 
 # 5. 合并权限到 android/app/src/main/AndroidManifest.xml
 #    （见 android-native/AndroidManifest.xml 模板）
@@ -67,10 +79,12 @@ cp android-native/NotificationSchedulerPlugin.kt \
 # 6. 确保 build.gradle 含 androidx.core 依赖
 #    （见 android-native/build.gradle.example）
 
+# 6b. Google 登录：将 google-services.json 放到 android/app/（见「Google 登录」章节）
+
 # 7. 编译 / 运行
-pnpm exec cap run android  # 连接真机或启动模拟器直接运行
-# 或
-cd android && ./gradlew assembleDebug   # 仅生成 APK
+export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+pnpm exec cap sync android   # 同步原生依赖与插件
+cd android && ./gradlew assembleDebug   # 生成 APK
 ```
 
 ## 权限说明

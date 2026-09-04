@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "216484619010",
+    "project_id": "spaced-c86c1",
+    "storage_bucket": "spaced-c86c1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:216484619010:android:a5be45782e25436d64581b",
+        "android_client_info": {
+          "package_name": "com.zhangdapeng.spaced"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "216484619010-ccc0445fgrlu0u6nav02g9adepomceor.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDAGyl2NvDwfVKbC7ulcLoo0TzjFkRxQv0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "216484619010-ccc0445fgrlu0u6nav02g9adepomceor.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

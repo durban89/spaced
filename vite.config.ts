@@ -3,7 +3,7 @@ import { defineConfig } from 'vite'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/spaced/',
+  base: process.env.CAPACITOR_BUILD ? './' : '/spaced/',
   plugins: [react()],
   build: {
     chunkSizeWarningLimit: 600,

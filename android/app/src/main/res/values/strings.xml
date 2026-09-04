@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Spaced</string>
+    <string name="title_activity_main">Spaced</string>
+    <string name="package_name">com.zhangdapeng.spaced</string>
+    <string name="custom_url_scheme">com.zhangdapeng.spaced</string>
+</resources>

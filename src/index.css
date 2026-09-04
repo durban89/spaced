@@ -74,6 +74,7 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  padding-top: env(safe-area-inset-top);
 }
 
 .app-main {
@@ -868,7 +869,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px 20px;
+  padding: calc(24px + env(safe-area-inset-top)) 20px 24px;
   background: var(--bg);
 }
 

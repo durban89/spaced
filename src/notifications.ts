@@ -1,10 +1,14 @@
 import { getDueCards } from './db'
+import { requestNativeNotificationPermission, isNativeNotificationsAvailable } from './nativeNotifications'
 
 const CHECK_INTERVAL = 60 * 1000
 const LAST_NOTIFIED_KEY = 'last-notified-time'
 let timer: ReturnType<typeof setInterval> | null = null
 
 export async function requestNotificationPermission(): Promise<boolean> {
+  if (await isNativeNotificationsAvailable()) {
+    return requestNativeNotificationPermission()
+  }
   if (!('Notification' in window)) return false
   if (Notification.permission === 'granted') return true
   if (Notification.permission === 'denied') return false
