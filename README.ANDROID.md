@@ -52,7 +52,7 @@ pnpm install
 pnpm build
 
 # 3. 生成原生 Android 工程（首次执行一次）
-npx cap add android
+pnpm exec cap add android
 
 # 4. 将 android-native/ 里的 Kotlin 文件复制到 android/app/src/main/java/com/aosibin/spaced/
 cp android-native/NotificationSchedulerPlugin.kt \
@@ -68,7 +68,7 @@ cp android-native/NotificationSchedulerPlugin.kt \
 #    （见 android-native/build.gradle.example）
 
 # 7. 编译 / 运行
-npx cap run android          # 连接真机或启动模拟器直接运行
+pnpm exec cap run android  # 连接真机或启动模拟器直接运行
 # 或
 cd android && ./gradlew assembleDebug   # 仅生成 APK
 ```
