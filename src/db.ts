@@ -12,7 +12,7 @@ import {
   type Firestore,
 } from 'firebase/firestore'
 import { getCurrentUser } from './auth'
-import { scheduleCardNotification, cancelCardNotification } from './nativeNotifications'
+import { cancelCardNotification } from './nativeNotifications'
 import type { Card, Stats } from './types'
 
 let _db: Firestore | null = null
@@ -52,7 +52,6 @@ export async function addCard(
     createdAt: now,
     updatedAt: now,
   })
-  await scheduleCardNotification({ ...card, id: docRef.id, level: 0, nextReview: now, reviewHistory: [], createdAt: now, updatedAt: now })
   return docRef.id
 }
 

@@ -38,6 +38,31 @@ export default function App() {
 
   useEffect(() => {
     let cancelled = false
+    let unsubscribe: (() => void) | undefined
+    ;(async () => {
+      const { App } = await import('@capacitor/app')
+      if (cancelled) return
+      const handle = await App.addListener('appUrlOpen', (e) => {
+        if (cancelled) return
+        // 通知点击 deep link: app://zhangdapeng/#/review?cardId=...
+        // HashRouter 只认 # 之后的部分
+        const hashIndex = e.url.indexOf('#')
+        if (hashIndex !== -1) {
+          window.location.hash = e.url.slice(hashIndex)
+        }
+      })
+      unsubscribe = () => {
+        handle.remove()
+      }
+    })()
+    return () => {
+      cancelled = true
+      unsubscribe?.()
+    }
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
     ;(async () => {
       if (!(await isNativeNotificationsAvailable())) return
       if (await checkNativeNotificationPermission()) return

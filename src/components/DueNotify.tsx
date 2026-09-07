@@ -8,7 +8,6 @@ import {
 } from '../notifications'
 import {
   checkNativeNotificationPermission,
-  fireTestNotification,
   isNativeNotificationsAvailable,
 } from '../nativeNotifications'
 
@@ -16,40 +15,19 @@ let globalForceCheck: (() => Promise<void>) | null = null
 
 type PermissionState = 'default' | 'granted' | 'denied'
 
-interface NativeDiag {
-  reached: boolean
-  raw: string
-}
-
-async function getPermission(): Promise<{
-  state: PermissionState
-  nativeDiag: NativeDiag
-}> {
+async function getPermission(): Promise<PermissionState> {
   const isNative = await isNativeNotificationsAvailable()
   if (isNative) {
     try {
-      const granted = await checkNativeNotificationPermission()
-      return {
-        state: granted ? 'granted' : 'denied',
-        nativeDiag: { reached: true, raw: String(granted) },
-      }
-    } catch (e) {
-      return {
-        state: 'denied',
-        nativeDiag: {
-          reached: true,
-          raw: e instanceof Error ? e.message : String(e),
-        },
-      }
+      return (await checkNativeNotificationPermission()) ? 'granted' : 'denied'
+    } catch {
+      return 'denied'
     }
   }
   if (!('Notification' in window)) {
-    return { state: 'denied', nativeDiag: { reached: false, raw: 'no-web-notif-api' } }
+    return 'denied'
   }
-  return {
-    state: Notification.permission as PermissionState,
-    nativeDiag: { reached: false, raw: 'web:' + Notification.permission },
-  }
+  return Notification.permission as PermissionState
 }
 
 export function forceCheckDue() {
@@ -64,7 +42,6 @@ export default function DueNotify() {
   const [permission, setPermission] = useState<PermissionState>('default')
   const [asking, setAsking] = useState(false)
   const [permError, setPermError] = useState('')
-  const [nativeDiag, setNativeDiag] = useState<NativeDiag | null>(null)
 
   const checkDue = useCallback(async () => {
     const { count, cards } = await checkAndNotify()
@@ -78,9 +55,7 @@ export default function DueNotify() {
 
   const refreshPermission = useCallback(async () => {
     try {
-      const { state, nativeDiag } = await getPermission()
-      setPermission(state)
-      setNativeDiag(nativeDiag)
+      setPermission(await getPermission())
       setPermError('')
     } catch (e) {
       setPermError(e instanceof Error ? e.message : String(e))
@@ -124,26 +99,6 @@ export default function DueNotify() {
 
   return (
     <>
-      {nativeDiag && (
-        <div
-          style={{
-            fontSize: 11,
-            color: '#93c5fd',
-            background: 'rgba(37,99,235,0.12)',
-            padding: '5px 8px',
-            wordBreak: 'break-all',
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            zIndex: 9999,
-          }}
-        >
-          diag[{permission}] native={nativeDiag.reached ? 'yes' : 'no'} raw={nativeDiag.raw}
-          {permError ? ` | err:${permError}` : ''}
-        </div>
-      )}
-
       {location.pathname === '/' && (
         <>
           {showBanner && dueCards.length > 0 ? (
@@ -187,17 +142,7 @@ export default function DueNotify() {
                 {asking ? '...' : permission === 'denied' ? 'Retry' : 'Enable'}
               </button>
             </div>
-          ) : (
-            <div className="notify-permission-banner">
-              <span style={{ color: '#4ade80' }}>Notifications granted</span>
-              <button
-                className="btn btn-sm btn-ghost"
-                onClick={() => fireTestNotification()}
-              >
-                Test notif
-              </button>
-            </div>
-          )}
+          ) : null}
         </>
       )}
     </>

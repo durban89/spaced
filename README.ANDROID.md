@@ -9,10 +9,11 @@ React Web 层                         Capacitor 桥接                    Androi
 ─────────────                       ──────────────                    ──────────────
 复习/新增卡片
 nextReview 时间戳 ────┐
-                      └─▶ NotificationScheduler     ──▶ AlarmManager.setExact
-                          (Capacitor Plugin, TS)        + 到点触发 Notification
-                                                              │
-                                      点击通知 ──▶ 打开 App 的 #/review ★──┘
+                      └─▶ NotificationScheduler     ──▶ AlarmManager.setExactAndAllowWhileIdle
+                          (Capacitor Plugin, TS)        （华为/荣耀无精确权限时自动降级
+                                                         为 setAndAllowWhileIdle）
+                                                               │
+                                       点击通知 ──▶ 打开 App 的 #/review ★──┘
 ```
 
 - 排期时间戳仍由 Web 层 `src/scheduler.ts` 计算（现有逻辑，未改动）
@@ -33,12 +34,12 @@ nextReview 时间戳 ────┐
 
 | 文件 | 说明 |
 |------|------|
-| `android-native/NotificationSchedulerPlugin.kt` | Capacitor 插件：`scheduleCard` / `cancelCard` / `requestPermission` |
-| `android-native/AlarmReceiver.kt` | 到点触发本地通知，点击深链跳转 `#/review` |
-| `android-native/DeepLinkHelper.kt` | 构造打开复习页的启动 Intent |
-| `android-native/BootReceiver.kt` | 设备重启恢复闹钟（骨架） |
-| `android-native/AndroidManifest.xml` | 所需权限与 receiver 声明（模板） |
-| `android-native/build.gradle.example` | 原生依赖配置示例 |
+| `android/app/src/main/java/.../NotificationSchedulerPlugin.kt` | Capacitor 插件：`scheduleCard` / `cancelCard` / `requestPermission` / `checkPermission` / `testNotification`，含精确闹钟降级与排期持久化 |
+| `android/app/src/main/java/.../AlarmReceiver.kt` | 到点触发本地通知，点击深链跳转 `#/review` |
+| `android/app/src/main/java/.../DeepLinkHelper.kt` | 构造打开复习页的启动 Intent |
+| `android/app/src/main/java/.../BootReceiver.kt` | 设备重启后从 SharedPreferences 恢复闹钟 |
+| `android/app/src/main/AndroidManifest.xml` | 所需权限与 receiver / deep-link 声明（实际运行版） |
+| `android-native/` | 仅作参考模板；改动请以 `android/app/` 实际运行版为准 |
 
 ## Google 登录（原生方式）
 
@@ -66,24 +67,15 @@ pnpm build
 # 3. 生成原生 Android 工程（首次执行一次）
 pnpm exec cap add android
 
-# 4. 将 android-native/ 里的 Kotlin 文件复制到 android/app/src/main/java/com/zhangdapeng/spaced/
-cp android-native/NotificationSchedulerPlugin.kt \
-   android-native/AlarmReceiver.kt \
-   android-native/DeepLinkHelper.kt \
-   android-native/BootReceiver.kt \
-   android/app/src/main/java/com/zhangdapeng/spaced/
+# 4. 生成的 Android 工程已包含原生代码（/3 后直接进行第 5 步）
+#    android/app/src/main/java/com/zhangdapeng/spaced/ 已含插件、接收器与深链
+#    勿用 android-native/ 覆盖，模板可能滞后于实际运行版
 
-# 5. 合并权限到 android/app/src/main/AndroidManifest.xml
-#    （见 android-native/AndroidManifest.xml 模板）
+# 5. 将 google-services.json 放到 android/app/（见「Google 登录」章节）
 
-# 6. 确保 build.gradle 含 androidx.core 依赖
-#    （见 android-native/build.gradle.example）
-
-# 6b. Google 登录：将 google-services.json 放到 android/app/（见「Google 登录」章节）
-
-# 7. 编译 / 运行
+# 6. 编译 / 运行
 export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
-pnpm exec cap sync android   # 同步原生依赖与插件
+pnpm exec cap sync android   # 同步原生依赖与插件（含 @capacitor/app）
 cd android && ./gradlew assembleDebug   # 生成 APK
 ```
 

@@ -12,6 +12,7 @@
   "dependencies": {
     "@capacitor-firebase/authentication": "^7.5.0",
     "@capacitor/android": "^7.0.0",
+    "@capacitor/app": "^7.1.2",
     "@capacitor/core": "^7.0.0",
     "firebase": "^12.18.0",
     "idb": "^8.0.3",
@@ -20,6 +21,7 @@
     "react-router-dom": "^7.18.2"
   },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^7.0.0",
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.18",
@@ -27,6 +29,7 @@
     "@types/react-router-dom": "^5.3.3",
     "@vitejs/plugin-react": "^6.1.0",
     "oxlint": "^1.79.0",
+    "sharp": "^0.35.4",
     "typescript": "~6.0.2",
     "vite": "^8.2.2"
   }
