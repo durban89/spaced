@@ -9,6 +9,8 @@ import {
   query,
   where,
   orderBy,
+  setDoc,
+  arrayUnion,
   type Firestore,
 } from 'firebase/firestore'
 import { getCurrentUser } from './auth'
@@ -37,6 +39,32 @@ async function cardRef(id: string) {
   if (!user) throw new Error('Not authenticated')
   const db = await getDb()
   return doc(db, 'users', user.uid, 'cards', id)
+}
+
+async function userRef() {
+  const user = getCurrentUser()
+  if (!user) throw new Error('Not authenticated')
+  const db = await getDb()
+  return doc(db, 'users', user.uid)
+}
+
+const ARRAY_UNION_MAX = 20
+
+export async function getStudyDates(): Promise<string[]> {
+  const ref = await userRef()
+  const snap = await getDoc(ref)
+  const data = snap.data()
+  if (!data || !Array.isArray(data.studyDates)) return []
+  return data.studyDates.filter((d): d is string => typeof d === 'string')
+}
+
+export async function addStudyDates(days: string[]): Promise<void> {
+  const ref = await userRef()
+  const unique = [...new Set(days)]
+  for (let i = 0; i < unique.length; i += ARRAY_UNION_MAX) {
+    const chunk = unique.slice(i, i + ARRAY_UNION_MAX)
+    await setDoc(ref, { studyDates: arrayUnion(...chunk) }, { merge: true })
+  }
 }
 
 export async function addCard(

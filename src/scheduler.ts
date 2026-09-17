@@ -1,6 +1,8 @@
 import { INTERVALS, type Card, type ReviewResult } from './types'
-import { updateCard, getCard } from './db'
+import { updateCard, getCard, getStudyDates, addStudyDates } from './db'
 import { scheduleCardNotification, cancelCardNotification } from './nativeNotifications'
+
+const LEGACY_STREAK_KEY = 'streak'
 
 export function scheduleNext(card: Card, result: ReviewResult): { level: number; nextReview: number } {
   let { level } = card
@@ -49,37 +51,74 @@ export async function syncNativeSchedule(card: Card): Promise<void> {
   }
 }
 
-export function getStreak(): number {
-  const history = localStorage.getItem('streak')
-  if (!history) return 0
+function dayKey(ts: number = Date.now()): string {
+  const d = new Date(ts)
+  d.setHours(0, 0, 0, 0)
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
 
-  const dates: number[] = JSON.parse(history)
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const todayMs = today.getTime()
+function readLegacyDates(): string[] {
+  try {
+    const raw = localStorage.getItem(LEGACY_STREAK_KEY)
+    if (!raw) return []
+    const timestamps: number[] = JSON.parse(raw)
+    return [...new Set(timestamps.map((ts) => dayKey(ts)))]
+  } catch {
+    return []
+  }
+}
 
-  const uniqueDates = [...new Set(dates.map((d) => {
-    const dt = new Date(d)
-    dt.setHours(0, 0, 0, 0)
-    return dt.getTime()
-  }))].sort((a, b) => b - a)
+function clearLegacyDates(): void {
+  try {
+    localStorage.removeItem(LEGACY_STREAK_KEY)
+  } catch {
+    // noop
+  }
+}
 
-  if (uniqueDates[0] !== todayMs) return 0
+function computeStreak(dayKeys: string[]): number {
+  const unique = [...new Set(dayKeys)].sort().reverse()
+  const today = dayKey()
+  if (unique[0] !== today) return 0
 
   let streak = 1
-  for (let i = 1; i < uniqueDates.length; i++) {
-    if (todayMs - uniqueDates[i] === streak * 86400000) {
-      streak++
-    } else {
-      break
-    }
+  for (let i = 1; i < unique.length; i++) {
+    const prev = new Date(`${unique[i - 1]}T00:00:00`)
+    prev.setDate(prev.getDate() - 1)
+    if (unique[i] === dayKey(prev.getTime())) streak++
+    else break
   }
   return streak
 }
 
-export function recordStudyDay(): void {
-  const history = localStorage.getItem('streak')
-  const dates: number[] = history ? JSON.parse(history) : []
-  dates.push(Date.now())
-  localStorage.setItem('streak', JSON.stringify(dates.slice(-365)))
+export async function getStreak(): Promise<number> {
+  try {
+    let days = await getStudyDates()
+    if (days.length === 0) {
+      const legacy = readLegacyDates()
+      if (legacy.length > 0) {
+        await addStudyDates(legacy)
+        clearLegacyDates()
+        days = legacy
+      }
+    }
+    return computeStreak(days)
+  } catch (e) {
+    console.warn('getStreak failed, falling back to local data', e)
+    return computeStreak(readLegacyDates())
+  }
+}
+
+export async function recordStudyDay(): Promise<void> {
+  try {
+    const legacy = readLegacyDates()
+    const dates = legacy.length > 0 ? [...legacy, dayKey()] : [dayKey()]
+    await addStudyDates(dates)
+    clearLegacyDates()
+  } catch (e) {
+    console.warn('recordStudyDay failed', e)
+  }
 }

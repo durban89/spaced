@@ -16,7 +16,7 @@ export default function Stats() {
   const loadStats = async () => {
     const s = await getStats()
     setStats(s)
-    setStreak(getStreak())
+    setStreak(await getStreak())
 
     const allCards = await getAllCards()
 

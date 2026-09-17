@@ -22,7 +22,7 @@ export default function Home() {
   const loadStats = async () => {
     const s = await getStats()
     setStats(s)
-    setStreak(getStreak())
+    setStreak(await getStreak())
   }
 
   const handleAdd = async () => {
@@ -34,8 +34,8 @@ export default function Home() {
     loadStats()
   }
 
-  const handleStartReview = () => {
-    recordStudyDay()
+  const handleStartReview = async () => {
+    await recordStudyDay()
     navigate('/review')
   }
 

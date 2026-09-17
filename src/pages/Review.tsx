@@ -37,7 +37,7 @@ export default function Review() {
     setSubmitting(true)
     try {
       await processReview(card.id, result)
-      recordStudyDay()
+      await recordStudyDay()
       forceCheckDue()
 
       if (currentIndex + 1 < dueCards.length) {
