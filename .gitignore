@@ -6,3 +6,5 @@ dist/
 .idea/
 .env
 .env.local
+spaced-*.json
+google-services.json

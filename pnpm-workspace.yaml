@@ -5,4 +5,4 @@ allowBuilds:
   '@firebase/util': true
   protobufjs: true
   re2: true
-  sharp: set this to true or false
+  sharp: false
