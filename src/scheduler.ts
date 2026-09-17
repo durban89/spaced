@@ -96,14 +96,12 @@ function computeStreak(dayKeys: string[]): number {
 
 export async function getStreak(): Promise<number> {
   try {
+    const legacy = readLegacyDates()
     let days = await getStudyDates()
-    if (days.length === 0) {
-      const legacy = readLegacyDates()
-      if (legacy.length > 0) {
-        await addStudyDates(legacy)
-        clearLegacyDates()
-        days = legacy
-      }
+    if (legacy.length > 0) {
+      await addStudyDates(legacy)
+      clearLegacyDates()
+      days = [...new Set([...days, ...legacy])]
     }
     return computeStreak(days)
   } catch (e) {
