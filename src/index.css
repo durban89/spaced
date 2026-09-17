@@ -936,3 +936,16 @@ body {
   background: var(--border);
   box-shadow: var(--shadow-sm);
 }
+
+.app-version {
+  position: fixed;
+  bottom: calc(var(--nav-height, 64px) + 2px);
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-secondary);
+  opacity: 0.6;
+  pointer-events: none;
+  z-index: 5;
+}
