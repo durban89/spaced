@@ -1,6 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import DueNotify from './DueNotify'
-import { APP_VERSION, BUILD_TIME } from '../version'
 
 function HomeIcon({ active }: { active: boolean }) {
   return (
@@ -76,7 +75,6 @@ export default function Layout() {
           </NavLink>
         ))}
       </nav>
-      <div className="app-version">v{APP_VERSION} · {BUILD_TIME ? new Date(BUILD_TIME).toLocaleString() : ''}</div>
     </div>
   )
 }

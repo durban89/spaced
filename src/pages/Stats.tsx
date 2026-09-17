@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { getStats, getAllCards } from '../db'
 import { getStreak } from '../scheduler'
+import { APP_VERSION, BUILD_TIME } from '../version'
 import type { Stats } from '../types'
 
 export default function Stats() {
@@ -26,17 +27,19 @@ export default function Stats() {
     }
     setLevelDistribution(levels)
 
-    const activityMap = new Map<string, number>()
+    const activityMap = new Map<number, number>()
     for (const card of allCards) {
       for (const record of card.reviewHistory) {
-        const date = new Date(record.date).toLocaleDateString('en-US')
-        activityMap.set(date, (activityMap.get(date) || 0) + 1)
+        const day = new Date(record.date)
+        day.setHours(0, 0, 0, 0)
+        const key = day.getTime()
+        activityMap.set(key, (activityMap.get(key) || 0) + 1)
       }
     }
     const activity = Array.from(activityMap.entries())
-      .map(([date, count]) => ({ date, count }))
-      .sort((a, b) => b.date.localeCompare(a.date))
+      .sort((a, b) => b[0] - a[0])
       .slice(0, 7)
+      .map(([ts, count]) => ({ date: new Date(ts).toLocaleDateString('en-US'), count }))
     setRecentActivity(activity)
   }
 
@@ -120,6 +123,8 @@ export default function Stats() {
           </div>
         </div>
       )}
+
+      <div className="app-version">v{APP_VERSION} · {BUILD_TIME ? new Date(BUILD_TIME).toLocaleString() : ''}</div>
     </div>
   )
 }
