@@ -970,7 +970,7 @@ body {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-md);
   width: 100%;
   max-width: 420px;
   max-height: 80vh;
@@ -1022,4 +1022,14 @@ body {
 .category-manage-item input {
   flex: 1;
   min-width: 0;
+}
+
+.category-error {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger, #ef4444);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  font-size: 13px;
+  margin-bottom: 12px;
 }

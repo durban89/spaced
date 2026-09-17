@@ -4,6 +4,7 @@ import {
   saveCategoryList,
   renameCategory,
   deleteCategory,
+  getCardsByCategory,
 } from '../db'
 
 interface Props {
@@ -16,6 +17,7 @@ export default function CategoryManager({ onClose, onChanged }: Props) {
   const [newName, setNewName] = useState('')
   const [renaming, setRenaming] = useState<string | null>(null)
   const [renameValue, setRenameValue] = useState('')
+  const [error, setError] = useState('')
 
   useEffect(() => {
     ;(async () => {
@@ -29,6 +31,7 @@ export default function CategoryManager({ onClose, onChanged }: Props) {
     const next = [...new Set([...items, name])]
     setItems(next)
     setNewName('')
+    setError('')
     await saveCategoryList(next)
     onChanged()
   }
@@ -39,13 +42,22 @@ export default function CategoryManager({ onClose, onChanged }: Props) {
     await renameCategory(oldName, name)
     setItems(await getCategoryList())
     setRenaming(null)
+    setError('')
     onChanged()
   }
 
   const handleDelete = async (name: string) => {
-    if (!confirm(`Delete category "${name}"? Existing cards keep their tag.`)) return
+    const cards = await getCardsByCategory(name)
+    if (cards.length > 0) {
+      setError(
+        `Category "${name}" still has ${cards.length} card(s). Please delete those cards first, then the category can be removed.`
+      )
+      return
+    }
+    if (!confirm(`Delete category "${name}"?`)) return
     await deleteCategory(name)
     setItems(await getCategoryList())
+    setError('')
     onChanged()
   }
 
@@ -70,6 +82,8 @@ export default function CategoryManager({ onClose, onChanged }: Props) {
             Add
           </button>
         </div>
+
+        {error && <div className="category-error">{error}</div>}
 
         <div className="category-manage-list">
           {items.map((name) => (
