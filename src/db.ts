@@ -15,7 +15,7 @@ import {
 } from 'firebase/firestore'
 import { getCurrentUser } from './auth'
 import { cancelCardNotification } from './nativeNotifications'
-import type { Card, Stats } from './types'
+import { CATEGORY_PRESETS, type Card, type Stats } from './types'
 
 let _db: Firestore | null = null
 
@@ -128,6 +128,36 @@ export async function getCategories(): Promise<{ name: string; count: number }[]
     map.set(card.category, (map.get(card.category) || 0) + 1)
   }
   return Array.from(map.entries()).map(([name, count]) => ({ name, count }))
+}
+
+export async function getCategoryList(): Promise<string[]> {
+  const ref = await userRef()
+  const snap = await getDoc(ref)
+  const data = snap.data()
+  if (data && Array.isArray(data.categories)) {
+    const list = data.categories.filter((c): c is string => typeof c === 'string')
+    if (list.length > 0) return list
+  }
+  return CATEGORY_PRESETS
+}
+
+export async function saveCategoryList(categories: string[]): Promise<void> {
+  const ref = await userRef()
+  await setDoc(ref, { categories: [...new Set(categories)] }, { merge: true })
+}
+
+export async function renameCategory(oldName: string, newName: string): Promise<void> {
+  const list = await getCategoryList()
+  await saveCategoryList(list.map((c) => (c === oldName ? newName : c)))
+  const cards = await getCardsByCategory(oldName)
+  for (const card of cards) {
+    if (card.id) await updateCard(card.id, { category: newName })
+  }
+}
+
+export async function deleteCategory(name: string): Promise<void> {
+  const list = await getCategoryList()
+  await saveCategoryList(list.filter((c) => c !== name))
 }
 
 export async function getStats(): Promise<Stats> {

@@ -1,19 +1,21 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { addCard, getStats } from '../db'
+import { addCard, getStats, getCategoryList } from '../db'
 import { logout } from '../auth'
-import { CATEGORY_PRESETS } from '../types'
 import { getStreak, recordStudyDay } from '../scheduler'
+import CategoryManager from '../components/CategoryManager'
 import type { Stats } from '../types'
 
 export default function Home() {
   const navigate = useNavigate()
   const [stats, setStats] = useState<Stats | null>(null)
-  const [category, setCategory] = useState(CATEGORY_PRESETS[0])
+  const [categoryList, setCategoryList] = useState<string[]>([])
+  const [category, setCategory] = useState('')
   const [question, setQuestion] = useState('')
   const [answer, setAnswer] = useState('')
   const [streak, setStreak] = useState(0)
   const [showForm, setShowForm] = useState(false)
+  const [manageOpen, setManageOpen] = useState(false)
 
   useEffect(() => {
     loadStats()
@@ -24,6 +26,16 @@ export default function Home() {
     setStats(s)
     setStreak(await getStreak())
   }
+
+  const loadCategories = async () => {
+    const list = await getCategoryList()
+    setCategoryList(list)
+    setCategory((cur) => (cur && list.includes(cur) ? cur : list[0]))
+  }
+
+  useEffect(() => {
+    loadCategories()
+  }, [])
 
   const handleAdd = async () => {
     if (!question.trim() || !answer.trim()) return
@@ -97,14 +109,22 @@ export default function Home() {
           <div className="add-form">
             <div className="form-group">
               <label>Category</label>
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-              >
-                {CATEGORY_PRESETS.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
+              <div className="category-row">
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                >
+                  {categoryList.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+                <button
+                  className="btn btn-sm btn-ghost"
+                  onClick={() => setManageOpen(true)}
+                >
+                  Manage
+                </button>
+              </div>
             </div>
             <div className="form-group">
               <label>Question</label>
@@ -134,6 +154,13 @@ export default function Home() {
           </div>
         )}
       </div>
+
+      {manageOpen && (
+        <CategoryManager
+          onClose={() => setManageOpen(false)}
+          onChanged={loadCategories}
+        />
+      )}
     </div>
   )
 }

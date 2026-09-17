@@ -6,8 +6,9 @@ import {
   updateCard,
   deleteCard,
   getCategories,
+  getCategoryList,
 } from '../db'
-import { CATEGORY_PRESETS, type Card } from '../types'
+import type { Card } from '../types'
 
 export default function Cards() {
   const [cards, setCards] = useState<Card[]>([])
@@ -17,7 +18,8 @@ export default function Cards() {
   const [editQuestion, setEditQuestion] = useState('')
   const [editAnswer, setEditAnswer] = useState('')
   const [showAddForm, setShowAddForm] = useState(false)
-  const [newCategory, setNewCategory] = useState(CATEGORY_PRESETS[0])
+  const [categoryOptions, setCategoryOptions] = useState<string[]>([])
+  const [newCategory, setNewCategory] = useState('')
   const [newQuestion, setNewQuestion] = useState('')
   const [newAnswer, setNewAnswer] = useState('')
   const [loading, setLoading] = useState(true)
@@ -26,6 +28,9 @@ export default function Cards() {
     setLoading(true)
     const cats = await getCategories()
     setCategories(cats)
+    const options = await getCategoryList()
+    setCategoryOptions(options)
+    setNewCategory((cur) => (cur && options.includes(cur) ? cur : options[0]))
     const allCards = selectedCategory
       ? await getCardsByCategory(selectedCategory)
       : await getAllCards()
@@ -92,7 +97,7 @@ export default function Cards() {
               value={newCategory}
               onChange={(e) => setNewCategory(e.target.value)}
             >
-              {CATEGORY_PRESETS.map((c) => (
+              {categoryOptions.map((c) => (
                 <option key={c} value={c}>{c}</option>
               ))}
             </select>
