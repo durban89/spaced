@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { addCard, getStats, getCategoryList } from '../db'
+import { addCard, getStats, getCategoryList, DuplicateCardError } from '../db'
 import { logout } from '../auth'
 import { getStreak, recordStudyDay } from '../scheduler'
 import CategoryManager from '../components/CategoryManager'
@@ -16,6 +16,7 @@ export default function Home() {
   const [streak, setStreak] = useState(0)
   const [showForm, setShowForm] = useState(false)
   const [manageOpen, setManageOpen] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     loadStats()
@@ -39,7 +40,13 @@ export default function Home() {
 
   const handleAdd = async () => {
     if (!question.trim() || !answer.trim()) return
-    await addCard({ category, question: question.trim(), answer: answer.trim() })
+    setError('')
+    try {
+      await addCard({ category, question: question.trim(), answer: answer.trim() })
+    } catch (e) {
+      setError(e instanceof DuplicateCardError ? e.message : 'Failed to add card')
+      return
+    }
     setQuestion('')
     setAnswer('')
     setShowForm(false)
@@ -151,6 +158,7 @@ export default function Home() {
             >
               Add Card
             </button>
+            {error && <div className="form-error">{error}</div>}
           </div>
         )}
       </div>

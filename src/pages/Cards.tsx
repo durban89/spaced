@@ -7,6 +7,7 @@ import {
   deleteCard,
   getCategories,
   getCategoryList,
+  DuplicateCardError,
 } from '../db'
 import type { Card } from '../types'
 
@@ -23,6 +24,7 @@ export default function Cards() {
   const [newQuestion, setNewQuestion] = useState('')
   const [newAnswer, setNewAnswer] = useState('')
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   const loadData = async () => {
     setLoading(true)
@@ -44,11 +46,17 @@ export default function Cards() {
 
   const handleAdd = async () => {
     if (!newQuestion.trim() || !newAnswer.trim()) return
-    await addCard({
-      category: newCategory,
-      question: newQuestion.trim(),
-      answer: newAnswer.trim(),
-    })
+    setError('')
+    try {
+      await addCard({
+        category: newCategory,
+        question: newQuestion.trim(),
+        answer: newAnswer.trim(),
+      })
+    } catch (e) {
+      setError(e instanceof DuplicateCardError ? e.message : 'Failed to add card')
+      return
+    }
     setNewQuestion('')
     setNewAnswer('')
     setShowAddForm(false)
@@ -127,6 +135,7 @@ export default function Cards() {
           >
             Add
           </button>
+          {error && <div className="form-error">{error}</div>}
         </div>
       )}
 

@@ -1117,6 +1117,17 @@ body {
   margin-bottom: 14px;
 }
 
+.form-error {
+  background: var(--danger-light);
+  color: var(--danger);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.45;
+  margin-top: 12px;
+}
+
 @media (prefers-color-scheme: dark) {
   .category-manage-item:hover {
     background: rgba(244, 244, 245, 0.07);

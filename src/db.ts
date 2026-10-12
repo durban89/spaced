@@ -67,9 +67,34 @@ export async function addStudyDates(days: string[]): Promise<void> {
   }
 }
 
+export class DuplicateCardError extends Error {
+  constructor() {
+    super('A card with the same question already exists in this category.')
+    this.name = 'DuplicateCardError'
+  }
+}
+
+function normalizeQuestion(question: string): string {
+  return question.trim().toLowerCase()
+}
+
+export async function findDuplicateCard(
+  question: string,
+  category: string,
+  excludeId?: string
+): Promise<Card | undefined> {
+  const target = normalizeQuestion(question)
+  if (!target) return undefined
+  const cards = await getCardsByCategory(category)
+  return cards.find((c) => c.id !== excludeId && normalizeQuestion(c.question) === target)
+}
+
 export async function addCard(
   card: Omit<Card, 'id' | 'level' | 'nextReview' | 'reviewHistory' | 'createdAt' | 'updatedAt'>
 ): Promise<string> {
+  if (await findDuplicateCard(card.question, card.category)) {
+    throw new DuplicateCardError()
+  }
   const now = Date.now()
   const ref = await userCardsRef()
   const docRef = await addDoc(ref, {
