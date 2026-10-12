@@ -11,6 +11,16 @@ if (hasKeystore) {
     keystorePropsFile.withInputStream { keystoreProps.load(it) }
 }
 
+// google-services.json 同样不入库：若 ~/keystores/spaced/ 下存在副本，
+// 构建时同步到本项目，换机器后只要该目录在即可直接构建。
+def keystoreServicesJson = file("${keystoreDir}/google-services.json")
+if (keystoreServicesJson.exists()) {
+    copy {
+        from keystoreServicesJson
+        into projectDir
+    }
+}
+
 android {
     namespace "com.zhangdapeng.spaced"
     compileSdk rootProject.ext.compileSdkVersion
