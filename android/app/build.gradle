@@ -1,9 +1,29 @@
 apply plugin: 'com.android.application'
 apply plugin: 'org.jetbrains.kotlin.android'
 
+// 签名密钥放在仓库外，仿 ~/keystores/kun 的约定（release.jks + keystore.properties）。
+// 可用 SPACED_KEYSTORE_DIR 覆盖，默认 ~/keystores/spaced。
+def keystoreDir = System.getenv("SPACED_KEYSTORE_DIR") ?: "${System.properties['user.home']}/keystores/spaced"
+def keystorePropsFile = file("${keystoreDir}/keystore.properties")
+def keystoreProps = new Properties()
+def hasKeystore = keystorePropsFile.exists()
+if (hasKeystore) {
+    keystorePropsFile.withInputStream { keystoreProps.load(it) }
+}
+
 android {
     namespace "com.zhangdapeng.spaced"
     compileSdk rootProject.ext.compileSdkVersion
+    signingConfigs {
+        if (hasKeystore) {
+            release {
+                storeFile file("${keystoreDir}/${keystoreProps['storeFile']}")
+                storePassword keystoreProps['storePassword']
+                keyAlias keystoreProps['keyAlias']
+                keyPassword keystoreProps['keyPassword']
+            }
+        }
+    }
     defaultConfig {
         applicationId "com.zhangdapeng.spaced"
         minSdkVersion rootProject.ext.minSdkVersion
@@ -18,7 +38,15 @@ android {
         }
     }
     buildTypes {
+        debug {
+            if (hasKeystore) {
+                signingConfig signingConfigs.release
+            }
+        }
         release {
+            if (hasKeystore) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
