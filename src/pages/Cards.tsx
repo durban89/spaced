@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import {
   getAllCards,
   getCardsByCategory,
@@ -15,6 +15,7 @@ export default function Cards() {
   const [cards, setCards] = useState<Card[]>([])
   const [categories, setCategories] = useState<{ name: string; count: number }[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string>('')
+  const [searchQuery, setSearchQuery] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editQuestion, setEditQuestion] = useState('')
   const [editAnswer, setEditAnswer] = useState('')
@@ -43,6 +44,16 @@ export default function Cards() {
   useEffect(() => {
     loadData()
   }, [selectedCategory])
+
+  const filteredCards = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase()
+    if (!query) return cards
+    const terms = query.split(/\s+/)
+    return cards.filter((card) => {
+      const haystack = `${card.question} ${card.answer} ${card.category}`.toLowerCase()
+      return terms.every((term) => haystack.includes(term))
+    })
+  }, [cards, searchQuery])
 
   const handleAdd = async () => {
     if (!newQuestion.trim() || !newAnswer.trim()) return
@@ -139,6 +150,25 @@ export default function Cards() {
         </div>
       )}
 
+      <div className="search-box">
+        <input
+          type="search"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search cards..."
+          aria-label="Search cards"
+        />
+        {searchQuery && (
+          <button
+            className="search-clear"
+            onClick={() => setSearchQuery('')}
+            aria-label="Clear search"
+          >
+            ×
+          </button>
+        )}
+      </div>
+
       <div className="category-filter">
         <button
           className={`filter-chip ${selectedCategory === '' ? 'active' : ''}`}
@@ -160,13 +190,22 @@ export default function Cards() {
       <div className="card-list">
         {loading ? (
           <div className="loading">Loading...</div>
-        ) : cards.length === 0 ? (
+        ) : filteredCards.length === 0 ? (
           <div className="empty-state">
-            <p>No cards yet</p>
-            <p className="text-muted">Tap "+ Add" to create your first card</p>
+            {searchQuery ? (
+              <>
+                <p>No matching cards</p>
+                <p className="text-muted">Try a different search term</p>
+              </>
+            ) : (
+              <>
+                <p>No cards yet</p>
+                <p className="text-muted">Tap "+ Add" to create your first card</p>
+              </>
+            )}
           </div>
         ) : (
-          cards.map((card) => (
+          filteredCards.map((card) => (
             <div key={card.id} className="card-item">
               {editingId === card.id ? (
                 <div className="card-edit">
